@@ -2,8 +2,8 @@
 # 💡 LUMINA
 
 > **Le logiciel médico-social qui simplifie votre quotidien.**
-> *Éclairer le parcours d'accompagnement, coordonner les équipes, libérer du temps pour l'humain.*
-
+> *Éclairer le parcours d'accompagnement, coordonner les équipes, libérer du temps pour l'humain.
+> **Accessible sur :** http://127.0.0.1:5173/
 ---
 
 ## 🌟 À propos de Lumina

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/layout/Header';
 import { Sidebar, ActiveTab } from './components/layout/Sidebar';
+import { BottomNav } from './components/layout/BottomNav';
 import { WaitingRoomView } from './components/dashboard/WaitingRoomView';
 import { PatientRecordsView } from './components/patients/PatientRecordsView';
 import { PatientDetailModal } from './components/patients/PatientDetailModal';
@@ -34,6 +35,7 @@ import {
 export function App() {
   // Navigation State
   const [activeTab, setActiveTab] = useState<ActiveTab>('waiting_room');
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   // Doctor Settings State (persisted)
   const [doctorProfile, setDoctorProfile] = useState<DoctorSettings>(() => {
@@ -335,12 +337,13 @@ export function App() {
           }
         }}
         onOpenAdminSettings={() => setIsAdminModalOpen(true)}
+        onOpenMobileMenu={() => setIsMobileDrawerOpen(true)}
         waitingCount={waitingCount}
       />
 
       {/* Main View Area with Sidebar */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Navigation Sidebar */}
+        {/* Navigation Sidebar (Desktop + Mobile Drawer) */}
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -348,10 +351,12 @@ export function App() {
           activeTasksCount={activeTasksCount}
           inConsultationPatientName={inConsultationAppt?.patientName}
           onOpenAdminSettings={() => setIsAdminModalOpen(true)}
+          isMobileDrawerOpen={isMobileDrawerOpen}
+          onCloseMobileDrawer={() => setIsMobileDrawerOpen(false)}
         />
 
-        {/* Central Workspace Tab Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        {/* Central Workspace Tab Content (with bottom padding on mobile for BottomNav) */}
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 pb-24 md:pb-8">
           <div className="max-w-7xl mx-auto">
             {activeTab === 'waiting_room' && (
               <WaitingRoomView
@@ -413,6 +418,15 @@ export function App() {
         </main>
       </div>
 
+      {/* Mobile Bottom Navigation Bar (md:hidden) */}
+      <BottomNav
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        waitingCount={waitingCount}
+        activeTasksCount={activeTasksCount}
+        inConsultation={!!inConsultationAppt}
+      />
+
       {/* MODAL: Full Patient Detail */}
       {inspectingPatient && (
         <PatientDetailModal
@@ -452,7 +466,7 @@ export function App() {
 
       {/* Google-style Notification Toast */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 animate-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-20 md:bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 animate-in slide-in-from-bottom-3 duration-200">
           <span className="w-2 h-2 rounded-full bg-[#1A73E8]"></span>
           <span>{toastMessage}</span>
         </div>

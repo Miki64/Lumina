@@ -9,7 +9,8 @@ import {
   ShieldCheck, 
   CalendarCheck,
   Settings,
-  ListTodo
+  ListTodo,
+  X
 } from 'lucide-react';
 
 export type ActiveTab = 'waiting_room' | 'patients' | 'consultation' | 'prescription' | 'tasks_agenda';
@@ -21,6 +22,8 @@ interface SidebarProps {
   activeTasksCount: number;
   inConsultationPatientName?: string;
   onOpenAdminSettings: () => void;
+  isMobileDrawerOpen?: boolean;
+  onCloseMobileDrawer?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -29,7 +32,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   waitingCount,
   activeTasksCount,
   inConsultationPatientName,
-  onOpenAdminSettings
+  onOpenAdminSettings,
+  isMobileDrawerOpen = false,
+  onCloseMobileDrawer
 }) => {
   const navItems = [
     {
@@ -70,10 +75,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
-  return (
-    <aside className="no-print w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 select-none">
+  const handleItemClick = (tab: ActiveTab) => {
+    setActiveTab(tab);
+    if (onCloseMobileDrawer) onCloseMobileDrawer();
+  };
+
+  const content = (
+    <div className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between h-full shrink-0 select-none">
       <div className="p-3.5 space-y-1">
-        <div className="px-3 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        {/* Mobile Drawer Header */}
+        <div className="flex md:hidden items-center justify-between px-3 py-2 border-b border-slate-100 mb-2">
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-base text-slate-900">Lumina</span>
+            <span className="text-[10px] bg-blue-50 text-[#1A73E8] font-bold px-1.5 py-0.5 rounded">Pro</span>
+          </div>
+          {onCloseMobileDrawer && (
+            <button
+              onClick={onCloseMobileDrawer}
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+
+        <div className="hidden md:block px-3 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
           Modules Médicaux
         </div>
 
@@ -84,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => handleItemClick(item.id)}
               className={`w-full text-left px-3.5 py-3 rounded-xl flex items-start gap-3 transition-all cursor-pointer ${
                 isActive
                   ? 'bg-blue-50/80 text-[#1A73E8] font-semibold shadow-2xs'
@@ -114,7 +140,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Administration Button in Navigation */}
         <div className="pt-2">
           <button
-            onClick={onOpenAdminSettings}
+            onClick={() => {
+              onOpenAdminSettings();
+              if (onCloseMobileDrawer) onCloseMobileDrawer();
+            }}
             className="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 font-medium transition-all cursor-pointer border border-transparent hover:border-slate-200"
           >
             <div className="p-1.5 rounded-lg text-slate-500">
@@ -129,14 +158,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Bottom Service Card / Sync indicator */}
-      <div className="p-3.5 border-t border-slate-100 space-y-3">
+      <div className="p-3.5 border-t border-slate-100 space-y-3 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
         <div className="p-3 bg-[#F8F9FA] rounded-xl border border-slate-200/80">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
             <ListTodo className="w-4 h-4 text-emerald-600" />
             <span>Google Tasks Connecté</span>
           </div>
           <p className="text-[11px] text-slate-500 mt-1">
-            Création de tâches de suivi conformes RFC 5545 VTODO.
+            Création de tâches conformes RFC 5545 VTODO.
           </p>
         </div>
 
@@ -144,9 +173,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <span className="flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-blue-500" /> RGPD & HDS certifié
           </span>
-          <span>Lumina v1.0</span>
+          <span>Lumina Mobile</span>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="no-print hidden md:flex h-full shrink-0">
+        {content}
+      </aside>
+
+      {/* Mobile Drawer (Visible when isMobileDrawerOpen === true) */}
+      {isMobileDrawerOpen && (
+        <div className="no-print fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+            onClick={onCloseMobileDrawer}
+          />
+          {/* Drawer content */}
+          <div className="relative z-10 h-full max-w-[280px] w-full bg-white shadow-2xl animate-in slide-in-from-left duration-200">
+            {content}
+          </div>
+        </div>
+      )}
+    </>
   );
 };

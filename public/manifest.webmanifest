@@ -1,0 +1,19 @@
+{
+  "name": "Lumina — Cabinet Médical Connecté",
+  "short_name": "Lumina",
+  "description": "Exercez ! On s'occupe du reste... Logiciel médical complet pour cabinet et mobilité",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F9FA",
+  "theme_color": "#1A73E8",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["medical", "health", "productivity"]
+}

@@ -62,6 +62,8 @@ export const ConsultationView: React.FC<ConsultationViewProps> = ({
   const [isListening, setIsListening] = useState<boolean>(false);
   const [speechSupported, setSpeechSupported] = useState<boolean>(true);
   const recognitionRef = useRef<any>(null);
+  // Ref qui accumule uniquement les résultats FINALS confirmés par l'API
+  const finalDictationRef = useRef<string>('');
 
   // AI Generated Sections
   const [soapNotes, setSoapNotes] = useState<{
@@ -110,15 +112,34 @@ export const ConsultationView: React.FC<ConsultationViewProps> = ({
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = 'fr-FR';
+      recognition.maxAlternatives = 1;
 
       recognition.onresult = (event: any) => {
-        let currentTranscript = '';
+        let interimTranscript = '';
+
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          currentTranscript += event.results[i][0].transcript;
+          const result = event.results[i];
+          const text = result[0].transcript;
+
+          if (result.isFinal) {
+            // Mot/phrase confirmé(e) définitivement par l'API
+            finalDictationRef.current = finalDictationRef.current
+              ? `${finalDictationRef.current} ${text.trim()}`
+              : text.trim();
+          } else {
+            // Résultat temporaire, en cours de reconnaissance
+            interimTranscript += text;
+          }
         }
-        if (currentTranscript.trim()) {
-          setDictationText((prev) => (prev ? `${prev} ${currentTranscript}` : currentTranscript));
-        }
+
+        // Texte affiché = finals confirmés + interim en cours (pas de doublons)
+        setDictationText(() => {
+          const finals = finalDictationRef.current;
+          const interim = interimTranscript.trim();
+          if (finals && interim) return `${finals} ${interim}`;
+          if (finals) return finals;
+          return interim;
+        });
       };
 
       recognition.onerror = (event: any) => {
@@ -152,6 +173,9 @@ export const ConsultationView: React.FC<ConsultationViewProps> = ({
       recognitionRef.current?.stop();
       setIsListening(false);
     } else {
+      // Initialiser le ref finals avec le texte déjà présent dans la zone
+      // (pour ne pas l'écraser lors de la prochaine session de dictée)
+      finalDictationRef.current = dictationText;
       try {
         recognitionRef.current?.start();
         setIsListening(true);

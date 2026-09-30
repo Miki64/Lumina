@@ -150,7 +150,7 @@ export const PatientRecordsView: React.FC<PatientRecordsViewProps> = ({
         </div>
       </div>
 
-      {/* Patient Cards Grid */}
+      {/* Patient Table */}
       {patients.length === 0 ? (
         <div className="bg-white p-12 rounded-2xl border border-slate-200 shadow-2xs text-center space-y-4">
           <div className="w-16 h-16 rounded-full bg-blue-50 text-[#1A73E8] flex items-center justify-center mx-auto">
@@ -171,113 +171,172 @@ export const PatientRecordsView: React.FC<PatientRecordsViewProps> = ({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((patient) => {
-            const hasAllergies = patient.allergies.length > 0;
-            const visitsCount = patient.visits.length;
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+          {/* Result count */}
+          <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+            <span className="text-xs text-slate-500">
+              {filtered.length} patient{filtered.length !== 1 ? 's' : ''} affiché{filtered.length !== 1 ? 's' : ''}
+              {search && <span className="ml-1">pour « {search} »</span>}
+            </span>
+          </div>
 
-            return (
-              <div
-                key={patient.id}
-                className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs hover:shadow-md hover:border-blue-200 transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-100 text-[#1A73E8] font-bold text-base flex items-center justify-center shadow-2xs">
-                        {patient.firstName[0]}{patient.lastName[0]}
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-slate-900 text-sm leading-tight">
-                          {patient.lastName} {patient.firstName}
-                        </h3>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {patient.gender === 'M' ? 'Homme' : 'Femme'} • Né(e) le {patient.birthDate}
-                        </p>
-                      </div>
-                    </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-5 py-3 whitespace-nowrap">
+                    Patient
+                  </th>
+                  <th className="text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3 whitespace-nowrap">
+                    N° Sécurité Sociale
+                  </th>
+                  <th className="text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3 whitespace-nowrap">
+                    Téléphone
+                  </th>
+                  <th className="text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3 whitespace-nowrap">
+                    Email
+                  </th>
+                  <th className="text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3 whitespace-nowrap">
+                    Dernière consultation
+                  </th>
+                  <th className="text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3 whitespace-nowrap">
+                    Alertes
+                  </th>
+                  <th className="text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-5 py-3 whitespace-nowrap">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.map((patient) => {
+                  const hasAllergies = patient.allergies.length > 0;
+                  const lastVisit = patient.visits && patient.visits.length > 0
+                    ? patient.visits.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+                    : null;
 
-                    {hasAllergies && (
-                      <span className="p-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200" title="Allergies signalées">
-                        <AlertTriangle className="w-4 h-4" />
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Identification numbers & Contact */}
-                  <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
-                    <div className="font-mono text-[11px] text-slate-500">
-                      NIR : {patient.ssn}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{patient.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5 text-slate-400" />
-                      <span className="truncate">{patient.email || 'Email non renseigné'}</span>
-                    </div>
-                  </div>
-
-                  {/* Tags: Allergies & Antecedents */}
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {patient.allergies.map((allergy, i) => (
-                      <span
-                        key={i}
-                        className="px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded-md"
-                      >
-                        ⚠️ {allergy}
-                      </span>
-                    ))}
-                    {patient.surgicalHistory.map((surg, i) => (
-                      <span
-                        key={i}
-                        className="px-2 py-0.5 text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-md"
-                      >
-                        🔪 {surg}
-                      </span>
-                    ))}
-                    {patient.medicalHistory.map((med, i) => (
-                      <span
-                        key={i}
-                        className="px-2 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200 rounded-md"
-                      >
-                        {med}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Footer Actions */}
-                <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => onOpenPatientDetail(patient)}
-                      className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                  return (
+                    <tr
+                      key={patient.id}
+                      className="hover:bg-blue-50/40 transition-colors group"
                     >
-                      Dossier
-                    </button>
-                    <button
-                      onClick={() => onOpenSynthesizedProfile(patient)}
-                      className="px-2.5 py-1.5 text-xs font-semibold text-[#1A73E8] bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
-                      title="Volet de Synthèse Médicale (VSM / Confrère)"
-                    >
-                      <Share2 className="w-3 h-3" />
-                      <span>VSM</span>
-                    </button>
-                  </div>
+                      {/* Identité */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-blue-100 text-[#1A73E8] font-bold text-xs flex items-center justify-center shrink-0">
+                            {patient.firstName[0]}{patient.lastName[0]}
+                          </div>
+                          <div>
+                            <button
+                              onClick={() => onOpenPatientDetail(patient)}
+                              className="font-semibold text-slate-900 text-xs hover:text-[#1A73E8] transition-colors cursor-pointer text-left"
+                            >
+                              {patient.lastName} {patient.firstName}
+                            </button>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              {patient.gender === 'M' ? 'H' : 'F'} · Né(e) le {patient.birthDate}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
 
-                  <button
-                    onClick={() => onStartConsultation(patient)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-[#1A73E8] hover:bg-[#1557B0] rounded-xl shadow-2xs transition-colors cursor-pointer"
-                  >
-                    <Play className="w-3 h-3" />
-                    <span>Consulter</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+                      {/* NSS */}
+                      <td className="px-4 py-3.5">
+                        <span className="font-mono text-[11px] text-slate-600 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">
+                          {patient.ssn || <span className="text-slate-400 italic">Non renseigné</span>}
+                        </span>
+                      </td>
+
+                      {/* Téléphone */}
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-700">
+                          <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span>{patient.phone || <span className="text-slate-400 italic">—</span>}</span>
+                        </div>
+                      </td>
+
+                      {/* Email */}
+                      <td className="px-4 py-3.5 max-w-[200px]">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-700">
+                          <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          {patient.email
+                            ? <span className="truncate">{patient.email}</span>
+                            : <span className="text-slate-400 italic">Non renseigné</span>
+                          }
+                        </div>
+                      </td>
+
+                      {/* Dernière consultation */}
+                      <td className="px-4 py-3.5">
+                        {lastVisit ? (
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <div>
+                              <span className="text-xs font-medium text-slate-700">
+                                {new Date(lastVisit.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              </span>
+                              {lastVisit.reason && (
+                                <p className="text-[11px] text-slate-400 truncate max-w-[160px]">{lastVisit.reason}</p>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 italic flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5" />
+                            Jamais consulté(e)
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Alertes */}
+                      <td className="px-4 py-3.5">
+                        <div className="flex flex-wrap gap-1">
+                          {hasAllergies && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded-md whitespace-nowrap">
+                              <AlertTriangle className="w-3 h-3" />
+                              {patient.allergies.length} allergie{patient.allergies.length > 1 ? 's' : ''}
+                            </span>
+                          )}
+                          {patient.visits.length > 0 && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded-md whitespace-nowrap">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                              {patient.visits.length} visite{patient.visits.length > 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => onOpenPatientDetail(patient)}
+                            className="px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                          >
+                            Dossier
+                          </button>
+                          <button
+                            onClick={() => onOpenSynthesizedProfile(patient)}
+                            className="px-2.5 py-1.5 text-[11px] font-semibold text-[#1A73E8] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                            title="Volet de Synthèse Médicale"
+                          >
+                            <Share2 className="w-3 h-3" />
+                            <span>VSM</span>
+                          </button>
+                          <button
+                            onClick={() => onStartConsultation(patient)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold text-white bg-[#1A73E8] hover:bg-[#1557B0] rounded-lg shadow-2xs transition-colors cursor-pointer whitespace-nowrap"
+                          >
+                            <Play className="w-3 h-3" />
+                            <span>Consulter</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

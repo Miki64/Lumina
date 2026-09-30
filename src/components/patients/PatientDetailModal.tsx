@@ -19,8 +19,10 @@ import {
   Syringe,
   MailQuestion,
   Copy,
-  FolderOpen
+  FolderOpen,
+  Pencil
 } from 'lucide-react';
+import { PatientEditModal } from './PatientEditModal';
 import { Patient, PatientVisit, Prescription, BloodTestPrescription, ReferralLetterDocument } from '../../types/medical';
 
 interface PatientDetailModalProps {
@@ -39,6 +41,7 @@ export const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
   onOpenSynthesizedProfile
 }) => {
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'HISTORY' | 'DOCUMENTS'>('OVERVIEW');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [newAllergy, setNewAllergy] = useState('');
   const [newTreatment, setNewTreatment] = useState('');
   const [newMedicalHistoryItem, setNewMedicalHistoryItem] = useState('');
@@ -183,6 +186,15 @@ export const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Modifier la fiche */}
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl shadow-2xs transition-colors cursor-pointer"
+            >
+              <Pencil className="w-3.5 h-3.5 text-slate-500" />
+              <span>Modifier</span>
+            </button>
+
             <button
               onClick={() => onOpenSynthesizedProfile(patient)}
               className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl shadow-2xs transition-colors cursor-pointer"
@@ -709,6 +721,17 @@ export const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
           )}
         </div>
       </div>
+
+      {/* Edit Patient Modal */}
+      {isEditModalOpen && (
+        <PatientEditModal
+          patient={patient}
+          onSave={(updated) => {
+            onUpdatePatient(updated);
+          }}
+          onClose={() => setIsEditModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
